@@ -1,0 +1,13 @@
+h assign t5
+t5 sum h int
+h assign t4
+t4 mult int h
+h2 assign t3
+t3 div h h3
+h assign t2
+t2 div j i
+i assign t1
+t1 sum i int
+j assign t0
+t0 mult i int
+i assign int
