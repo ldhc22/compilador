@@ -1390,7 +1390,7 @@ yyreduce:
                                                       }
                                                       // if(strcmp($1->name,"int")==0){
                                                       //       if(strcmp($2->name,"int")==0)
-                                                      //             writeFile("code.txt",genSum($$->name,$1->name,$3->name));            
+                                                      //             writeFile("code.txt",genSum($$->name,$1->value,$3->name));            
                                                       // }
                                                       writeFile("code.txt",genSum((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));            
                                                       
