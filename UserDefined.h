@@ -1,4 +1,4 @@
-
+	
 /* Luis Daniel Hernández Carrera	A01360411
  * Jesus Torres Vazquez 			A01184899
  *
@@ -23,10 +23,25 @@ union val {
 typedef struct tableEntry_{
 	char * 			name;
 	enum myTypes	type;		
-	union val 		value;		
+	union val 		value;	
+	GArray *		list_true;
+	GArray *		list_false;
+	GArray *		list_next;
 }tableEntry;
 
 typedef struct tableEntry_ *entry_p;
+
+union result{
+	int 	address;
+	entry_p item;
+}
+
+typedef struct quad_{
+	char *			op;
+	union result	result;
+	entry_p 		arg1;
+	entry_p			arg2;
+}quad;
 
 	/* Specifies how to print each of the items in the symbol table 				*/
 int PrintItem(entry_p my_item);

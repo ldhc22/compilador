@@ -7,9 +7,11 @@
 #include "UserDefined.h"
 #include "FileManagement.h"
 
-GHashTable * table_p;
-extern int yylineno;
-void yyerror(char *s);
+GHashTable *      table_p;
+GArray *          code;
+
+extern int  yylineno;
+void        yyerror(char *s);
 
 %}
 
@@ -285,6 +287,8 @@ int main(int argc, char *argv[])
 
       /* Create the hash table to use as symbol table */
       	table_p = g_hash_table_new_full(g_str_hash, g_str_equal,NULL,(GDestroyNotify)FreeItem);
+
+            code = g_array_new(false,false,sizeof(quad));
 
       	if(!yyparse())
 			printf("\nParsing complete\n");
