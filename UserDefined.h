@@ -33,8 +33,8 @@ typedef struct tableEntry_ *entry_p;
 
 union result{
 	int 	address;
-	entry_p item;
-}
+	entry_p entry;
+};
 
 typedef struct quad_{
 	char *			op;
@@ -42,6 +42,8 @@ typedef struct quad_{
 	entry_p 		arg1;
 	entry_p			arg2;
 }quad;
+
+typedef struct quad_ * quad_p;
 
 	/* Specifies how to print each of the items in the symbol table 				*/
 int PrintItem(entry_p my_item);
@@ -66,3 +68,5 @@ void FreeItem(gpointer my_entry);
 void SymUpdate(GHashTable *myTable, char * name, enum myTypes type, union val value);
 
 entry_p newTemp(GHashTable *myTable);
+
+quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2);

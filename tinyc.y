@@ -10,6 +10,9 @@
 GHashTable *      table_p;
 GArray *          code;
 
+/* For the insertion into the code array */
+int               counter=0;
+
 extern int  yylineno;
 void        yyerror(char *s);
 
@@ -86,9 +89,9 @@ stmt_seq    : stmt_seq stmt
             |          
             ;
 
-stmt        : IF exp THEN stmt  
-            | IF exp THEN stmt ELSE stmt
-            | WHILE exp DO stmt  
+stmt        : IF exp THEN m stmt  
+            | IF exp THEN m stmt n ELSE m stmt
+            | WHILE m exp DO m stmt  
             | variable ASSIGN exp SEMI          {
                                                       writeFile("code.txt",genAssign($1->name,$3->name));
                                                       if($1->type == real){
@@ -111,6 +114,11 @@ stmt        : IF exp THEN stmt
             | READ LPAREN variable RPAREN SEMI
             | WRITE LPAREN exp RPAREN SEMI
             | block
+            ;
+            
+m           :
+            ;
+n           :
             ;
 
 block       : LBRACE stmt_seq RBRACE
@@ -156,7 +164,13 @@ simple_exp  : simple_exp PLUS term              {
                                                       //       if(strcmp($2->name,"int")==0)
                                                       //             writeFile("code.txt",genSum($$->name,$1->value,$3->name));            
                                                       // }
-                                                      writeFile("code.txt",genSum($$->name,$1->name,$3->name));            
+                                                      writeFile("code.txt",genSum($$->name,$1->name,$3->name));     
+
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = $$;
+                                                      g_array_append_vals(code,newQuad("sum",res,$1,$3),1);
+                                                      counter++;       
                                                       
                                                 }
             | simple_exp MINUS term             {     
@@ -181,7 +195,12 @@ simple_exp  : simple_exp PLUS term              {
                                                                   $$->type = integer;
                                                             }
                                                       }
-                                                      writeFile("code.txt",genMinus($$->name,$1->name,$3->name));            
+                                                      writeFile("code.txt",genMinus($$->name,$1->name,$3->name)); 
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = $$;
+                                                      g_array_append_vals(code,newQuad("minus",res,$1,$3),1);
+                                                      counter++;           
                                                 }
             | term                              {
                                                       $$ = $1;
@@ -210,7 +229,13 @@ term        : term TIMES factor                 {
                                                                   $$->type = integer;
                                                             }
                                                       }
-                                                      writeFile("code.txt",genMult($$->name,$1->name,$3->name));            
+                                                      writeFile("code.txt",genMult($$->name,$1->name,$3->name));   
+
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = $$;
+                                                      g_array_append_vals(code,newQuad("mult",res,$1,$3),1);
+                                                      counter++;         
                                                 }
             | term DIV factor                   {     
                                                       $$ = newTemp(table_p);
@@ -236,7 +261,14 @@ term        : term TIMES factor                 {
                                                                   $$->type = real;
                                                             }
                                                       }   
+                                                      /* Write the code to a txt file for debug*/
                                                       writeFile("code.txt",genDiv($$->name,$1->name,$3->name));                                                               
+
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = $$;
+                                                      g_array_append_vals(code,newQuad("div",res,$1,$3),1);
+                                                      counter++;
                                                 }
             | factor                            {
                                                       $$ = $1;
@@ -288,7 +320,7 @@ int main(int argc, char *argv[])
       /* Create the hash table to use as symbol table */
       	table_p = g_hash_table_new_full(g_str_hash, g_str_equal,NULL,(GDestroyNotify)FreeItem);
 
-            code = g_array_new(false,false,sizeof(quad));
+            code = g_array_new(0,0,sizeof(quad));
 
       	if(!yyparse())
 			printf("\nParsing complete\n");

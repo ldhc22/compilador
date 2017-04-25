@@ -79,6 +79,10 @@ void SymUpdate(GHashTable *myTable, char * name, enum myTypes type, union val va
 	}
 }
 
+	/* Looks for a temporal variable in the symbol table in the for t0, t1, t2, ... */
+	/* When the temporal is not found, it is created and added to the symbol table  */
+	/* the pointer to the structure added to the symbol table is returned			*/
+
 entry_p newTemp(GHashTable *myTable){
 	char * temp = malloc(sizeof(char *));
 	char * a = malloc(sizeof(char *));
@@ -92,4 +96,14 @@ entry_p newTemp(GHashTable *myTable){
 	}while(SymLookUp(myTable,temp)!=NULL);
 	SymInsert(myTable,temp,integer);
 	return SymLookUp(myTable,temp);
+}
+
+quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2){
+	quad_p myQuad = malloc(sizeof(quad_p));
+	myQuad->op = strdup(op);
+	myQuad->result = res;
+	myQuad->arg1 = arg1;
+	myQuad->arg2 = arg2;
+
+	return myQuad;
 }
