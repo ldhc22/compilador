@@ -97,6 +97,21 @@ entry_p newTemp(GHashTable *myTable){
 	return SymLookUp(myTable,temp);
 }
 
+entry_p newTempCons(GHashTable *myTable, union val value, enum myTypes type){
+	char * temp = malloc(sizeof(char *));
+	char * a = malloc(sizeof(char *));
+	int i = 0;	
+	do{
+		strcpy(temp,"t");
+		snprintf(a,sizeof(char *),"%d",i);
+		strcat(temp,a);		
+		i++;
+	}while(SymLookUp(myTable,temp)!=NULL);
+	SymInsert(myTable,temp,integer);
+	SymUpdate(myTable,temp,type,value);
+	return SymLookUp(myTable,temp);
+}
+
 quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2){
 	quad_p myQuad = malloc(sizeof(quad_p));
 	myQuad->op = strdup(op);
@@ -172,6 +187,8 @@ void PrintQuad(quad_p myQuad){
 	}else if(strcmp(myQuad->op,"assign")==0){
 		printf("Dest %s ",myQuad->result.entry->name );
 		printf("Arg1 %s ",(myQuad->arg1)->name );
+	}else if(strcmp(myQuad->op,"write")==0||strcmp(myQuad->op,"read")==0){
+		printf("Dest %s ",myQuad->result.entry->name );
 	}else{
 		printf("Dest %s ",myQuad->result.entry->name );
 		printf("Arg1 %s ",(myQuad->arg1)->name );

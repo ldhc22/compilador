@@ -1,0 +1,17 @@
+int a;
+int b;
+float x;
+
+{
+	a := 0;
+	b := 10;
+	x := 0.3;
+	while(a<b) do {
+		write (x);
+		a := a + 2;
+	}
+	if(a<100)then{
+		write(x*10);
+		a := a;
+	}
+}

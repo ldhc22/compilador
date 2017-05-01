@@ -12,7 +12,6 @@ GPtrArray *          code;
 GPtrArray *       WTF;
 
 /* For the insertion into the code array */
-int               counter=0;
 
 extern int  yylineno;
 void        yyerror(char *s);
@@ -116,7 +115,6 @@ stmt        : IF exp THEN m stmt                {
                                                       union result res;
                                                       res.address = $2;
                                                       g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
-                                                      counter++;       
                                                 }
             | variable ASSIGN exp SEMI          {
                                                       $$ = malloc(sizeof(entry_p));
@@ -134,14 +132,13 @@ stmt        : IF exp THEN m stmt                {
                                                             if($3->type == real){
                                                                   printf("\nWarning! In line %d: Incompatible types, passing float to int\n",yylineno );
                                                             }else{
-                                                                  SymUpdate(table_p,$1->name,$1->type,$3->value);
+                                                                  //SymUpdate(table_p,$1->name,$1->type,$3->value);
                                                             }
                                                       }
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $1;
                                                       g_ptr_array_add(code,newQuad("assign",res,$3,NULL));
-                                                      counter++;
                                                       $$->list_next = g_ptr_array_new();       
                                                 }                             
             | READ LPAREN variable RPAREN SEMI  {
@@ -149,15 +146,15 @@ stmt        : IF exp THEN m stmt                {
                                                       union result res;
                                                       res.entry = $3;
                                                       g_ptr_array_add(code,newQuad("read",res,NULL,NULL));
-                                                      counter++; 
                                                       $$->list_next = g_ptr_array_new();
                                                 }
             | WRITE LPAREN exp RPAREN SEMI      {
                                                       $$ = malloc(sizeof(entry_p));
                                                       union result res;
                                                       res.entry = $3;
-                                                      g_ptr_array_add(code,newQuad("write",res,NULL,NULL));
-                                                      counter++; 
+                                                      quad_p x = newQuad("write",res,NULL,NULL);
+                                                      g_ptr_array_add(code,x);
+                                                      PrintQuad(x);
                                                       $$->list_next = g_ptr_array_new();
                                                 }
             | block                             {                                                      
@@ -166,15 +163,14 @@ stmt        : IF exp THEN m stmt                {
             ;
             
 m           :									{
-													$$ = counter;
+													$$ = code->len;
 											}
             ;
 n           : ELSE 								{
-													$$ = newList(counter);
+													$$ = newList(code->len);
                                                                               union result res;
                                                                               res.address = 0;
 													g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
-													counter++;
 											}
             ;
 
@@ -185,43 +181,37 @@ block       : LBRACE stmt_seq RBRACE            {
 
 exp         : simple_exp LT simple_exp          {                                                      
                                                       $$->type = integer;
-                                                      $$->list_true = newList(counter);
+                                                      $$->list_true = newList(code->len);
                                                       
-                                                      $$->list_false = newList(counter+1);                                                               
+                                                      $$->list_false = newList(code->len+1);                                                               
                                                       union result res;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("LT",res,$1,$3));
-                                                      counter++;
                                                       union result res2;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
-                                                      counter++;
                                                 }
             | simple_exp EQ simple_exp          {
                                                       $$->type = integer;
-                                                      $$->list_true = newList(counter);
-                                                      $$->list_false = newList(counter+1);
+                                                      $$->list_true = newList(code->len);
+                                                      $$->list_false = newList(code->len+1);
                                                       union result res;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("EQ",res,$1,$3));
-                                                      counter++;
                                                       union result res2;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
-                                                      counter++;
                                                 }
             | simple_exp GT simple_exp          {
                                                       $$->type = integer;
-                                                      $$->list_true = newList(counter);
-                                                      $$->list_false = newList(counter+1);
+                                                      $$->list_true = newList(code->len);
+                                                      $$->list_false = newList(code->len+1);
                                                       union result res;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("GT",res,$1,$3));
-                                                      counter++;
                                                       union result res2;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
-                                                      counter++;
                                                 }
             | simple_exp                        {
                                                       $$ = $1;
@@ -260,7 +250,6 @@ simple_exp  : simple_exp PLUS term              {
                                                       union result res;
                                                       res.entry = $$;
                                                       g_ptr_array_add(code,newQuad("sum",res,$1,$3));
-                                                      counter++;       
                                                       
                                                 }
             | simple_exp MINUS term             {     
@@ -290,7 +279,6 @@ simple_exp  : simple_exp PLUS term              {
                                                       union result res;
                                                       res.entry = $$;
                                                       g_ptr_array_add(code,newQuad("minus",res,$1,$3));
-                                                      counter++;           
                                                 }
             | term                              {
                                                       $$ = $1;
@@ -325,7 +313,6 @@ term        : term TIMES factor                 {
                                                       union result res;
                                                       res.entry = $$;
                                                       g_ptr_array_add(code,newQuad("mult",res,$1,$3));
-                                                      counter++;         
                                                 }
             | term DIV factor                   {     
                                                       $$ = newTemp(table_p);
@@ -358,7 +345,6 @@ term        : term TIMES factor                 {
                                                       union result res;
                                                       res.entry = $$;
                                                       g_ptr_array_add(code,newQuad("div",res,$1,$3));
-                                                      counter++;
                                                 }
             | factor                            {
                                                       $$ = $1;
@@ -370,18 +356,24 @@ factor      : LPAREN exp RPAREN                 {
 
                                                 }
             | INT_NUM                           {
-                                                      $$ = malloc(sizeof(entry_p));
-                                                      $$->name = malloc(sizeof(char *));
-                                                      strcpy($$->name,"int");
-                                                      $$->value.i_value = $1;
-                                                      $$->type = integer;
+                                                      //$$ = malloc(sizeof(entry_p));
+                                                      //$$->name = malloc(sizeof(char *));
+                                                      //strcpy($$->name,"int");
+                                                      //$$->value.i_value = $1;
+                                                      //$$->type = integer;
+                                                      union val value;
+                                                      value.i_value = $1;                                                      
+                                                      $$ = newTempCons(table_p,value,integer);
                                                 }
             | FLOAT_NUM                         {
-                                                      $$ = malloc(sizeof(entry_p));
-                                                      $$->name = malloc(sizeof(char *));
-                                                      strcpy($$->name,"float");
-                                                      $$->value.r_value = $1;
-                                                      $$->type = real;
+                                                      //$$ = malloc(sizeof(entry_p));
+                                                      //$$->name = malloc(sizeof(char *));
+                                                      //strcpy($$->name,"float");
+                                                      //$$->value.r_value = $1;
+                                                      //$$->type = real;
+                                                      union val value;
+                                                      value.r_value = $1;                                                      
+                                                      $$ = newTempCons(table_p,value,real);
                                                 }
             | variable                          {
                                                       $$ = $1;
@@ -423,10 +415,117 @@ int main(int argc, char *argv[])
 
 	/* Print the table entries when the process is done */
 	printf("\nValue of integer: %d\nValue of real: %d\n",integer,real);
-	PrintTable(table_p);       
-      PrintCode(code) ;
+	      
+      //PrintCode(code) ;
       //writeFile("code.txt",genMult("t0","a","b"));
 
+      /*************************************************/
+
+      int i = 0;
+      while(i<code->len){
+            quad_p myQuad = g_ptr_array_index(code,i);
+            i++;
+            if(strcmp(myQuad->op,"assign")==0){                  
+                  char * var = (myQuad->result.entry)->name;                  
+                  enum myTypes type = (myQuad->result.entry)->type;
+                  union val value = (myQuad->arg1)->value;
+                  SymUpdate(table_p,var,type,value);
+                  printf("Upadated %s with value: %d and type %d\n", var, value.i_value,type);
+            }else if(strcmp(myQuad->op,"jump")==0){
+                  i = myQuad->result.address;
+                  printf("Jumped to line %d\n", i);
+            }else if(strcmp(myQuad->op,"write")==0){
+                  printf("Entered write quad\n");
+                  if((myQuad->result.entry)->type == integer){
+                        printf("Value of %s: %d\n", (myQuad->result.entry)->name,(myQuad->result.entry)->value.i_value);
+                  }else{
+                        printf("Value of %s: %f\n", (myQuad->result.entry)->name,(myQuad->result.entry)->value.r_value);
+                  }                  
+            }else if(strcmp(myQuad->op,"LT")==0){
+                  
+                  if((myQuad->arg1)->type == integer){
+                        if((myQuad->arg2)->type == integer){
+                              int val1 = (myQuad->arg1)->value.i_value;                              
+                              int val2 = (myQuad->arg2)->value.i_value;
+                              printf("Values compared %d < %d \n",val1,val2 );
+                              if( val1 < val2 ){
+                                    i = myQuad->result.address;
+                                    printf("Jumped to line %d\n", i); 
+                              }                               
+                        }
+                        else{
+                              int val1 = (myQuad->arg1)->value.i_value;                              
+                              float val2 = (myQuad->arg2)->value.r_value;
+                              printf("Values compared %d < %f \n",val1,val2 );
+                              if( val1 < val2 ){
+                                    i = myQuad->result.address;
+                                    printf("Jumped to line %d\n", i); 
+                              }
+                        }
+                  }else{
+                        if((myQuad->arg2)->type == integer){
+                              float val1 = (myQuad->arg1)->value.r_value;                              
+                              int val2 = (myQuad->arg2)->value.i_value;
+                              printf("Values compared %f < %d \n",val1,val2 );
+                              if( val1 < val2 ){
+                                    i = myQuad->result.address;
+                                    printf("Jumped to line %d\n", i); 
+                              }
+                        }
+                        else{
+                              float val1 = (myQuad->arg1)->value.r_value;                              
+                              float val2 = (myQuad->arg2)->value.r_value;
+                              printf("Values compared %f < %f \n",val1,val2 );
+                              if( val1 < val2 ){
+                                    i = myQuad->result.address;
+                                    printf("Jumped to line %d\n", i); 
+                              }
+                        }
+                  }
+            }else if(strcmp(myQuad->op,"GT")==0){
+
+            }else if(strcmp(myQuad->op,"EQ")==0){
+
+            }else if(strcmp(myQuad->op,"sum")==0){
+                  float res;
+                  char * var = (myQuad->result.entry)->name;
+                  union val value;
+                  enum myTypes type = (myQuad->result.entry)->type;
+                  if((myQuad->arg1)->type == integer){
+                        if((myQuad->arg2)->type == integer){
+                              res = (myQuad->arg1)->value.i_value + (myQuad->arg2)->value.i_value;
+                        }
+                        else{
+                              res = (myQuad->arg1)->value.i_value + (myQuad->arg2)->value.r_value;     
+                        }
+                  }else{
+                        if((myQuad->arg2)->type == integer){
+                              res = (myQuad->arg1)->value.r_value + (myQuad->arg2)->value.i_value;
+                        }
+                        else{
+                              res = (myQuad->arg1)->value.r_value + (myQuad->arg2)->value.r_value;     
+                        }
+                  }
+                  if(type == integer){
+                        value.i_value = (int) res;
+                        printf("Result of sum %d\n",(int)res );
+                  }else{
+                        value.r_value = res;     
+                        printf("Result of sum %f\n",res );
+                  }
+                  
+                  SymUpdate(table_p,var,type,value);
+            }else if(strcmp(myQuad->op,"mult")==0){
+
+            }else if(strcmp(myQuad->op,"div")==0){
+
+            }
+            
+
+      }
+      PrintTable(table_p); 
+      PrintCode(code);
+      
 	/* Free the space used by the symbol table*/
 	g_hash_table_destroy(table_p);
 	return EXIT_SUCCESS;

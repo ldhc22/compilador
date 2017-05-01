@@ -67,7 +67,11 @@ void FreeItem(gpointer my_entry);
 	/* Finds the entry in the symbol table and update the values of the structure 	*/
 void SymUpdate(GHashTable *myTable, char * name, enum myTypes type, union val value);
 
+
+
 entry_p newTemp(GHashTable *myTable);
+
+entry_p newTempCons(GHashTable *myTable, union val value, enum myTypes type);
 
 quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2);
 
