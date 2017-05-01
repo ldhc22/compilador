@@ -108,9 +108,8 @@ quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2){
 }
 
 GPtrArray * newList(int add){
-	GPtrArray * myList = g_ptr_array_new();
+	GPtrArray * myList = g_ptr_array_new();	
 	g_ptr_array_add(myList,(gpointer)(long)add);
-	printf("Address added to list %d\n", add);
 	return myList;
 }
 
@@ -118,23 +117,95 @@ void backPatch(GPtrArray * code, GPtrArray * list, int add){
 	int i;
 	for(i=0;i<list->len;i++){
 		long index = (long)g_ptr_array_index(list,i);
-		quad_p quad = g_ptr_array_index(code,index);
+		quad_p quad = g_ptr_array_index(code,index);		
 		union result res;
 		res.address = add;
-		quad->result = res;
-		printf("Operation of quad %ld : %s\n", index,quad->op);
+		quad->result = res;		
 	}
 }
 
 GPtrArray * mergeList(GPtrArray * list1, GPtrArray * list2){
 	GPtrArray * newList = g_ptr_array_new();
 	int i;
-	for (i=0; i < list1->len; ++i){
-		g_ptr_array_add(newList,g_ptr_array_index(list1,i));
+	long * entry = malloc(sizeof(long));
+	for (i=0; i < list1->len; i++){
+		entry = (long *)g_ptr_array_index(list1,i);
+		g_ptr_array_add(newList,(gpointer)entry);
 	}
 
-	for (i = 0; i < list2->len; ++i){
-		g_ptr_array_add(newList,g_ptr_array_index(list2,i));
+	for (i = 0; i < list2->len; i++){
+		entry = (long *)g_ptr_array_index(list2,i);
+		g_ptr_array_add(newList,(gpointer)entry);
 	}
 	return newList;
+}
+
+GPtrArray * cloneList(GPtrArray * list){
+	GPtrArray * newList = g_ptr_array_new();
+	int i;
+	long * entry = malloc(sizeof(long));
+	for (i=0; i < list->len; i++){
+		entry = (long *) g_ptr_array_index(list,i);
+		g_ptr_array_add(newList,(gpointer)entry);
+	}
+	return newList;
+}
+
+GPtrArray * PatoList(GPtrArray * list1, GPtrArray * list2){
+	int i;
+	long entry;
+	for (i=0; i < list2->len; i++){
+		entry = (long) g_ptr_array_index(list2,i);
+		g_ptr_array_add(list1,(gpointer)entry);
+	}
+	return list1;
+}
+
+void PrintQuad(quad_p myQuad){
+	printf("Op: %s ", myQuad->op);
+	if(strcmp(myQuad->op,"jump")==0){
+		printf("Address: %d ",myQuad->result.address);
+	}else if(strcmp(myQuad->op,"LT")==0||strcmp(myQuad->op,"GT")==0||strcmp(myQuad->op,"EQ")==0){
+		printf("Address: %d ",myQuad->result.address);
+		printf("Arg1 %s ",(myQuad->arg1)->name );
+		printf("Arg2 %s ",(myQuad->arg2)->name );
+	}else if(strcmp(myQuad->op,"assign")==0){
+		printf("Dest %s ",myQuad->result.entry->name );
+		printf("Arg1 %s ",(myQuad->arg1)->name );
+	}else{
+		printf("Dest %s ",myQuad->result.entry->name );
+		printf("Arg1 %s ",(myQuad->arg1)->name );
+		printf("Arg2 %s ",(myQuad->arg2)->name );
+	}
+	printf("\n");
+}
+
+int PrintCodeHelper(gpointer data, gpointer user_data){
+	PrintQuad(data);
+	printf("----------------------------\n");
+    return EXIT_SUCCESS;
+}
+
+int PrintCode(GPtrArray *code){
+	printf("       Code generated       \n");
+	printf("================================\n");
+	g_ptr_array_foreach(code,(GFunc)PrintCodeHelper,NULL);
+	return EXIT_SUCCESS;
+}
+
+void PrintInt(long add){
+	printf(" %ld ",add);
+}
+
+int PrintListHelper(gpointer data, gpointer user_data){
+	PrintInt((long)data);
+	printf("\n");
+	return EXIT_SUCCESS;
+}
+
+void PrintList(GPtrArray * list,char * name){
+	printf(" \nList %s\n",name);
+	printf("=======================\n");
+	g_ptr_array_foreach(list,(GFunc)PrintListHelper,NULL);
+	printf("=======================\n");
 }

@@ -9,6 +9,7 @@
 
 GHashTable *      table_p;
 GPtrArray *          code;
+GPtrArray *       WTF;
 
 /* For the insertion into the code array */
 int               counter=0;
@@ -56,7 +57,7 @@ void        yyerror(char *s);
 %token DIV
 
 %type <integer_value> type m
-%type <symTab> variable factor term simple_exp exp stmt
+%type <symTab> variable factor term simple_exp exp stmt_seq block stmt
 %type <list> n
 
 %left MINUS PLUS
@@ -87,28 +88,38 @@ type        : INTEGER                                {$$ = integer;}
             | FLOAT                                  {$$ = real;}
             ;
 
-stmt_seq    : stmt_seq stmt                     
-            |          
+stmt_seq    : stmt_seq  stmt m                  {
+                                                      $$ = malloc(sizeof(entry_p));                                                      
+                                                      $$->list_next = cloneList($2->list_next);                                                      
+                                                      backPatch(code,$2->list_next,$3);
+                                                }
+            |                                   {                                                      
+                                                      
+                                                }
             ;
 
 stmt        : IF exp THEN m stmt                {
+                                                      $$ = malloc(sizeof(entry_p));
                                                       backPatch(code,$2->list_true,$4);
                                                       $$->list_next = mergeList($2->list_false,$5->list_next);
                                                 } 
             | IF exp THEN m stmt n m stmt       {
+                                                      $$ = malloc(sizeof(entry_p));
                                                       backPatch(code,$2->list_true,$4);
                                                       backPatch(code,$2->list_false,$7);
                                                       $$->list_next=mergeList($5->list_next,mergeList($6,$8->list_next));
                                                 }
-            | WHILE m exp DO m stmt             {
+            | WHILE m exp DO m stmt             {     
+                                                      $$ = malloc(sizeof(entry_p));                                                      
                                                       backPatch(code,$3->list_true,$5);
-                                                      //$$->list_next = $3->list_false;
+                                                      $$->list_next = cloneList($3->list_false);                                                      
                                                       union result res;
                                                       res.address = $2;
                                                       g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
                                                       counter++;       
                                                 }
             | variable ASSIGN exp SEMI          {
+                                                      $$ = malloc(sizeof(entry_p));
                                                       writeFile("code.txt",genAssign($1->name,$3->name));
                                                       if($1->type == real){
                                                             if($3->type == real){
@@ -130,16 +141,33 @@ stmt        : IF exp THEN m stmt                {
                                                       union result res;
                                                       res.entry = $1;
                                                       g_ptr_array_add(code,newQuad("assign",res,$3,NULL));
-                                                      counter++;       
+                                                      counter++;
+                                                      $$->list_next = g_ptr_array_new();       
                                                 }                             
-            | READ LPAREN variable RPAREN SEMI
-            | WRITE LPAREN exp RPAREN SEMI
-            | block
+            | READ LPAREN variable RPAREN SEMI  {
+                                                      $$ = malloc(sizeof(entry_p));
+                                                      union result res;
+                                                      res.entry = $3;
+                                                      g_ptr_array_add(code,newQuad("read",res,NULL,NULL));
+                                                      counter++; 
+                                                      $$->list_next = g_ptr_array_new();
+                                                }
+            | WRITE LPAREN exp RPAREN SEMI      {
+                                                      $$ = malloc(sizeof(entry_p));
+                                                      union result res;
+                                                      res.entry = $3;
+                                                      g_ptr_array_add(code,newQuad("write",res,NULL,NULL));
+                                                      counter++; 
+                                                      $$->list_next = g_ptr_array_new();
+                                                }
+            | block                             {                                                      
+                                                      $$ = $1;
+                                                }
             ;
             
 m           :									{
 													$$ = counter;
-												}
+											}
             ;
 n           : ELSE 								{
 													$$ = newList(counter);
@@ -147,16 +175,19 @@ n           : ELSE 								{
                                                                               res.address = 0;
 													g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
 													counter++;
-												}
+											}
             ;
 
-block       : LBRACE stmt_seq RBRACE
+block       : LBRACE stmt_seq RBRACE            {                                                      
+                                                      $$ = $2;                                                      
+                                                }
             ;
 
-exp         : simple_exp LT simple_exp          {
+exp         : simple_exp LT simple_exp          {                                                      
                                                       $$->type = integer;
                                                       $$->list_true = newList(counter);
-                                                      $$->list_false = newList(counter+1);
+                                                      
+                                                      $$->list_false = newList(counter+1);                                                               
                                                       union result res;
                                                       res.address = 0;
                                                       g_ptr_array_add(code,newQuad("LT",res,$1,$3));
@@ -336,6 +367,7 @@ term        : term TIMES factor                 {
 
 factor      : LPAREN exp RPAREN                 {
                                                       $$ = $2;
+
                                                 }
             | INT_NUM                           {
                                                       $$ = malloc(sizeof(entry_p));
@@ -380,6 +412,7 @@ int main(int argc, char *argv[])
       	table_p = g_hash_table_new_full(g_str_hash, g_str_equal,NULL,(GDestroyNotify)FreeItem);
 
             code = g_ptr_array_new();
+            WTF = g_ptr_array_new();
 
       	if(!yyparse())
 			printf("\nParsing complete\n");
@@ -390,7 +423,8 @@ int main(int argc, char *argv[])
 
 	/* Print the table entries when the process is done */
 	printf("\nValue of integer: %d\nValue of real: %d\n",integer,real);
-	PrintTable(table_p);   
+	PrintTable(table_p);       
+      PrintCode(code) ;
       //writeFile("code.txt",genMult("t0","a","b"));
 
 	/* Free the space used by the symbol table*/

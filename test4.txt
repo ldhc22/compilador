@@ -1,0 +1,14 @@
+/* Test #4 */
+/* Definitions go first */
+
+int j;
+float i;
+
+/* There is no "main" program, just blocks */
+
+{
+  /*i := 0;*/
+  while (i < 10) do {
+    j := i * 10;
+  }
+}

@@ -76,3 +76,19 @@ GPtrArray * newList(int add);
 void backPatch(GPtrArray * code, GPtrArray * list, int add);
 
 GPtrArray * mergeList(GPtrArray * list1, GPtrArray * list2);
+
+GPtrArray * PatoList(GPtrArray * list1, GPtrArray * list2);
+
+void PrintQuad(quad_p myQuad);
+
+int PrintCodeHelper(gpointer data, gpointer user_data);
+
+int PrintCode(GPtrArray *code);
+
+void PrintInt(long add);
+
+int PrintListHelper(gpointer data, gpointer user_data);
+
+void PrintList(GPtrArray * list,char * name);
+
+GPtrArray * cloneList(GPtrArray * list);
