@@ -24,9 +24,9 @@ typedef struct tableEntry_{
 	char * 			name;
 	enum myTypes	type;		
 	union val 		value;	
-	GArray *		list_true;
-	GArray *		list_false;
-	GArray *		list_next;
+	GPtrArray *		list_true;
+	GPtrArray *		list_false;
+	GPtrArray *		list_next;
 }tableEntry;
 
 typedef struct tableEntry_ *entry_p;
@@ -70,3 +70,9 @@ void SymUpdate(GHashTable *myTable, char * name, enum myTypes type, union val va
 entry_p newTemp(GHashTable *myTable);
 
 quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2);
+
+GPtrArray * newList(int add);
+
+void backPatch(GPtrArray * code, GPtrArray * list, int add);
+
+GPtrArray * mergeList(GPtrArray * list1, GPtrArray * list2);

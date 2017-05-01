@@ -90,8 +90,7 @@ entry_p newTemp(GHashTable *myTable){
 	do{
 		strcpy(temp,"t");
 		snprintf(a,sizeof(char *),"%d",i);
-		strcat(temp,a);
-		printf("Temp created: %s\n", temp);
+		strcat(temp,a);		
 		i++;
 	}while(SymLookUp(myTable,temp)!=NULL);
 	SymInsert(myTable,temp,integer);
@@ -106,4 +105,36 @@ quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2){
 	myQuad->arg2 = arg2;
 
 	return myQuad;
+}
+
+GPtrArray * newList(int add){
+	GPtrArray * myList = g_ptr_array_new();
+	g_ptr_array_add(myList,(gpointer)(long)add);
+	printf("Address added to list %d\n", add);
+	return myList;
+}
+
+void backPatch(GPtrArray * code, GPtrArray * list, int add){
+	int i;
+	for(i=0;i<list->len;i++){
+		long index = (long)g_ptr_array_index(list,i);
+		quad_p quad = g_ptr_array_index(code,index);
+		union result res;
+		res.address = add;
+		quad->result = res;
+		printf("Operation of quad %ld : %s\n", index,quad->op);
+	}
+}
+
+GPtrArray * mergeList(GPtrArray * list1, GPtrArray * list2){
+	GPtrArray * newList = g_ptr_array_new();
+	int i;
+	for (i=0; i < list1->len; ++i){
+		g_ptr_array_add(newList,g_ptr_array_index(list1,i));
+	}
+
+	for (i = 0; i < list2->len; ++i){
+		g_ptr_array_add(newList,g_ptr_array_index(list2,i));
+	}
+	return newList;
 }

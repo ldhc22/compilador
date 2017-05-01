@@ -8,7 +8,7 @@
 #include "FileManagement.h"
 
 GHashTable *      table_p;
-GArray *          code;
+GPtrArray *          code;
 
 /* For the insertion into the code array */
 int               counter=0;
@@ -23,6 +23,7 @@ void        yyerror(char *s);
    float          float_value;
    char *         string_value;
    entry_p        symTab;
+   GPtrArray *	list;
 }
 
 
@@ -54,8 +55,9 @@ void        yyerror(char *s);
 %token TIMES 
 %token DIV
 
-%type <integer_value> type
-%type <symTab> variable factor term simple_exp exp
+%type <integer_value> type m
+%type <symTab> variable factor term simple_exp exp stmt
+%type <list> n
 
 %left MINUS PLUS
 %left TIMES DIV
@@ -85,13 +87,27 @@ type        : INTEGER                                {$$ = integer;}
             | FLOAT                                  {$$ = real;}
             ;
 
-stmt_seq    : stmt_seq stmt  
+stmt_seq    : stmt_seq stmt                     
             |          
             ;
 
-stmt        : IF exp THEN m stmt  
-            | IF exp THEN m stmt n ELSE m stmt
-            | WHILE m exp DO m stmt  
+stmt        : IF exp THEN m stmt                {
+                                                      backPatch(code,$2->list_true,$4);
+                                                      $$->list_next = mergeList($2->list_false,$5->list_next);
+                                                } 
+            | IF exp THEN m stmt n m stmt       {
+                                                      backPatch(code,$2->list_true,$4);
+                                                      backPatch(code,$2->list_false,$7);
+                                                      $$->list_next=mergeList($5->list_next,mergeList($6,$8->list_next));
+                                                }
+            | WHILE m exp DO m stmt             {
+                                                      backPatch(code,$3->list_true,$5);
+                                                      //$$->list_next = $3->list_false;
+                                                      union result res;
+                                                      res.address = $2;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+                                                      counter++;       
+                                                }
             | variable ASSIGN exp SEMI          {
                                                       writeFile("code.txt",genAssign($1->name,$3->name));
                                                       if($1->type == real){
@@ -110,15 +126,28 @@ stmt        : IF exp THEN m stmt
                                                                   SymUpdate(table_p,$1->name,$1->type,$3->value);
                                                             }
                                                       }
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = $1;
+                                                      g_ptr_array_add(code,newQuad("assign",res,$3,NULL));
+                                                      counter++;       
                                                 }                             
             | READ LPAREN variable RPAREN SEMI
             | WRITE LPAREN exp RPAREN SEMI
             | block
             ;
             
-m           :
+m           :									{
+													$$ = counter;
+												}
             ;
-n           :
+n           : ELSE 								{
+													$$ = newList(counter);
+                                                                              union result res;
+                                                                              res.address = 0;
+													g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+													counter++;
+												}
             ;
 
 block       : LBRACE stmt_seq RBRACE
@@ -126,12 +155,42 @@ block       : LBRACE stmt_seq RBRACE
 
 exp         : simple_exp LT simple_exp          {
                                                       $$->type = integer;
+                                                      $$->list_true = newList(counter);
+                                                      $$->list_false = newList(counter+1);
+                                                      union result res;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("LT",res,$1,$3));
+                                                      counter++;
+                                                      union result res2;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+                                                      counter++;
                                                 }
             | simple_exp EQ simple_exp          {
                                                       $$->type = integer;
+                                                      $$->list_true = newList(counter);
+                                                      $$->list_false = newList(counter+1);
+                                                      union result res;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("EQ",res,$1,$3));
+                                                      counter++;
+                                                      union result res2;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+                                                      counter++;
                                                 }
             | simple_exp GT simple_exp          {
                                                       $$->type = integer;
+                                                      $$->list_true = newList(counter);
+                                                      $$->list_false = newList(counter+1);
+                                                      union result res;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("GT",res,$1,$3));
+                                                      counter++;
+                                                      union result res2;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+                                                      counter++;
                                                 }
             | simple_exp                        {
                                                       $$ = $1;
@@ -169,7 +228,7 @@ simple_exp  : simple_exp PLUS term              {
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
-                                                      g_array_append_vals(code,newQuad("sum",res,$1,$3),1);
+                                                      g_ptr_array_add(code,newQuad("sum",res,$1,$3));
                                                       counter++;       
                                                       
                                                 }
@@ -199,7 +258,7 @@ simple_exp  : simple_exp PLUS term              {
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
-                                                      g_array_append_vals(code,newQuad("minus",res,$1,$3),1);
+                                                      g_ptr_array_add(code,newQuad("minus",res,$1,$3));
                                                       counter++;           
                                                 }
             | term                              {
@@ -234,7 +293,7 @@ term        : term TIMES factor                 {
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
-                                                      g_array_append_vals(code,newQuad("mult",res,$1,$3),1);
+                                                      g_ptr_array_add(code,newQuad("mult",res,$1,$3));
                                                       counter++;         
                                                 }
             | term DIV factor                   {     
@@ -267,7 +326,7 @@ term        : term TIMES factor                 {
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
-                                                      g_array_append_vals(code,newQuad("div",res,$1,$3),1);
+                                                      g_ptr_array_add(code,newQuad("div",res,$1,$3));
                                                       counter++;
                                                 }
             | factor                            {
@@ -320,7 +379,7 @@ int main(int argc, char *argv[])
       /* Create the hash table to use as symbol table */
       	table_p = g_hash_table_new_full(g_str_hash, g_str_equal,NULL,(GDestroyNotify)FreeItem);
 
-            code = g_array_new(0,0,sizeof(quad));
+            code = g_ptr_array_new();
 
       	if(!yyparse())
 			printf("\nParsing complete\n");
