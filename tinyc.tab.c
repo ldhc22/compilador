@@ -72,12 +72,16 @@
 #include "UserDefined.h"
 #include "FileManagement.h"
 
-GHashTable * table_p;
-extern int yylineno;
-void yyerror(char *s);
+GHashTable *      table_p;
+GPtrArray *          code;
+
+/* For the insertion into the code array */
+
+extern int  yylineno;
+void        yyerror(char *s);
 
 
-#line 81 "tinyc.tab.c" /* yacc.c:339  */
+#line 85 "tinyc.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -144,14 +148,15 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 16 "tinyc.y" /* yacc.c:355  */
+#line 20 "tinyc.y" /* yacc.c:355  */
 
    int            integer_value;
    float          float_value;
    char *         string_value;
    entry_p        symTab;
+   GPtrArray *	list;
 
-#line 155 "tinyc.tab.c" /* yacc.c:355  */
+#line 160 "tinyc.tab.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -166,7 +171,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 170 "tinyc.tab.c" /* yacc.c:358  */
+#line 175 "tinyc.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -408,16 +413,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  3
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   65
+#define YYLAST   70
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  30
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  13
+#define YYNNTS  15
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  32
+#define YYNRULES  34
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  64
+#define YYNSTATES  70
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
@@ -466,10 +471,10 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    62,    62,    65,    66,    69,    79,    80,    83,    84,
-      87,    88,    89,    90,   109,   110,   111,   114,   117,   120,
-     123,   126,   131,   160,   184,   189,   213,   239,   244,   247,
-     254,   261,   266
+       0,    68,    68,    71,    72,    75,    85,    86,    89,    94,
+      99,   104,   110,   118,   143,   151,   161,   166,   170,   178,
+     183,   195,   206,   217,   222,   256,   284,   289,   318,   350,
+     355,   359,   369,   379,   384
 };
 #endif
 
@@ -482,8 +487,8 @@ static const char *const yytname[] =
   "COMA", "INTEGER", "FLOAT", "IF", "THEN", "ELSE", "WHILE", "DO",
   "ASSIGN", "WRITE", "READ", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "LT",
   "GT", "EQ", "LTEQ", "PLUS", "MINUS", "TIMES", "DIV", "$accept",
-  "program", "var_dec", "single_dec", "type", "stmt_seq", "stmt", "block",
-  "exp", "simple_exp", "term", "factor", "variable", YY_NULLPTR
+  "program", "var_dec", "single_dec", "type", "stmt_seq", "stmt", "m", "n",
+  "block", "exp", "simple_exp", "term", "factor", "variable", YY_NULLPTR
 };
 #endif
 
@@ -498,10 +503,10 @@ static const yytype_uint16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF -34
+#define YYPACT_NINF -48
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-34)))
+  (!!((Yystate) == (-48)))
 
 #define YYTABLE_NINF -1
 
@@ -512,13 +517,13 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -34,     7,     3,   -34,   -34,   -34,   -34,    -1,    26,    18,
-     -34,     1,     1,    15,    17,   -34,   -34,   -34,    32,   -34,
-     -34,   -34,     1,    37,    27,   -14,   -34,   -34,    41,     1,
-      53,     0,     1,    38,    26,     1,     1,     1,     1,     1,
-       1,     1,    26,    39,    40,   -34,    54,   -34,    49,    11,
-      11,    11,   -14,   -14,   -34,   -34,   -34,    56,    57,   -34,
-      26,   -34,   -34,   -34
+     -48,     9,    30,   -48,   -48,   -48,   -48,    22,    16,    10,
+     -48,     0,   -48,    29,    37,   -48,   -48,   -48,    25,   -48,
+     -48,   -48,     0,    45,   -16,    17,   -48,   -48,     0,     0,
+      54,    14,   -48,     0,    39,   -48,     0,     0,     0,     0,
+       0,     0,     0,    49,    40,    46,   -48,    58,   -48,    16,
+      23,    23,    23,    17,    17,   -48,   -48,   -48,    60,    61,
+     -48,    56,    16,   -48,   -48,   -48,   -48,   -48,    16,   -48
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -527,26 +532,26 @@ static const yytype_int8 yypact[] =
 static const yytype_uint8 yydefact[] =
 {
        4,     0,     9,     1,     6,     7,     3,     0,     2,     0,
-      32,     0,     0,     0,     0,     9,     8,    16,     0,     5,
-      29,    30,     0,     0,    21,    24,    27,    31,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,    17,     0,    28,    10,    18,
-      20,    19,    22,    23,    25,    26,    12,     0,     0,    13,
-       0,    15,    14,    11
+      34,     0,    17,     0,     0,     9,    17,    16,     0,     5,
+      31,    32,     0,     0,    23,    26,    29,    33,     0,     0,
+       0,     0,     8,     0,     0,    17,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,    19,     0,    30,     0,
+      20,    22,    21,    24,    25,    27,    28,    17,     0,     0,
+      13,    10,     0,    15,    14,    18,    17,    12,     0,    11
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -34,   -34,   -34,   -34,   -34,    50,   -33,   -34,    -4,    -5,
-       2,     4,    -8
+     -48,   -48,   -48,   -48,   -48,    55,   -47,   -15,   -48,   -48,
+      15,   -24,    13,    20,    -8
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     1,     2,     6,     7,     8,    16,    17,    23,    24,
-      25,    26,    27
+      -1,     1,     2,     6,     7,     8,    16,    28,    66,    17,
+      23,    24,    25,    26,    27
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -554,24 +559,26 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      18,    48,     9,    10,    10,    20,    21,     3,    28,    56,
-      11,     4,     5,    12,    40,    41,    13,    14,    33,    22,
-      15,    45,    44,    18,    19,    43,    18,    63,    46,    10,
-      49,    50,    51,    29,    18,    30,    11,    38,    39,    12,
-      52,    53,    13,    14,    54,    55,    15,    32,    34,    35,
-      36,    37,    18,    38,    39,    42,    10,    47,    57,    58,
-      59,    60,    61,    62,     0,    31
+      18,    32,    61,    10,    20,    21,    36,    37,    38,     3,
+      39,    40,    50,    51,    52,    67,    19,    10,    22,    10,
+      49,    69,    45,    18,    11,     9,    11,    12,     0,    12,
+      13,    14,    13,    14,    15,    46,    15,    34,     4,     5,
+      33,    18,    62,    43,    44,    41,    42,    29,    47,    39,
+      40,    68,    53,    54,    18,    30,    35,    10,    48,    58,
+      18,    55,    56,    57,    60,    59,    63,    64,    65,     0,
+      31
 };
 
 static const yytype_int8 yycheck[] =
 {
-       8,    34,     3,     3,     3,     4,     5,     0,    12,    42,
-      10,     8,     9,    13,    28,    29,    16,    17,    22,    18,
-      20,    21,    30,    31,     6,    29,    34,    60,    32,     3,
-      35,    36,    37,    18,    42,    18,    10,    26,    27,    13,
-      38,    39,    16,    17,    40,    41,    20,    15,    11,    22,
-      23,    24,    60,    26,    27,    14,     3,    19,    19,    19,
-       6,    12,     6,     6,    -1,    15
+       8,    16,    49,     3,     4,     5,    22,    23,    24,     0,
+      26,    27,    36,    37,    38,    62,     6,     3,    18,     3,
+      35,    68,    30,    31,    10,     3,    10,    13,    -1,    13,
+      16,    17,    16,    17,    20,    21,    20,    22,     8,     9,
+      15,    49,    57,    28,    29,    28,    29,    18,    33,    26,
+      27,    66,    39,    40,    62,    18,    11,     3,    19,    19,
+      68,    41,    42,    14,     6,    19,     6,     6,    12,    -1,
+      15
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -579,30 +586,30 @@ static const yytype_int8 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,    31,    32,     0,     8,     9,    33,    34,    35,     3,
-       3,    10,    13,    16,    17,    20,    36,    37,    42,     6,
-       4,     5,    18,    38,    39,    40,    41,    42,    38,    18,
-      18,    35,    15,    38,    11,    22,    23,    24,    26,    27,
-      28,    29,    14,    38,    42,    21,    38,    19,    36,    39,
-      39,    39,    40,    40,    41,    41,    36,    19,    19,     6,
-      12,     6,     6,    36
+       3,    10,    13,    16,    17,    20,    36,    39,    44,     6,
+       4,     5,    18,    40,    41,    42,    43,    44,    37,    18,
+      18,    35,    37,    15,    40,    11,    22,    23,    24,    26,
+      27,    28,    29,    40,    40,    44,    21,    40,    19,    37,
+      41,    41,    41,    42,    42,    43,    43,    14,    19,    19,
+       6,    36,    37,     6,     6,    12,    38,    36,    37,    36
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
        0,    30,    31,    32,    32,    33,    34,    34,    35,    35,
-      36,    36,    36,    36,    36,    36,    36,    37,    38,    38,
-      38,    38,    39,    39,    39,    40,    40,    40,    41,    41,
-      41,    41,    42
+      36,    36,    36,    36,    36,    36,    36,    37,    38,    39,
+      40,    40,    40,    40,    41,    41,    41,    42,    42,    42,
+      43,    43,    43,    43,    44
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     2,     2,     0,     3,     1,     1,     2,     0,
-       4,     6,     4,     4,     5,     5,     1,     3,     3,     3,
-       3,     1,     3,     3,     1,     3,     3,     1,     3,     1,
-       1,     1,     1
+       0,     2,     2,     2,     0,     3,     1,     1,     3,     0,
+       5,     8,     6,     4,     5,     5,     1,     0,     1,     3,
+       3,     3,     3,     1,     3,     3,     1,     3,     3,     1,
+       3,     1,     1,     1,     1
 };
 
 
@@ -1279,13 +1286,13 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 62 "tinyc.y" /* yacc.c:1646  */
+#line 68 "tinyc.y" /* yacc.c:1646  */
     { printf ("No syntax errors \n");}
-#line 1285 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1292 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 69 "tinyc.y" /* yacc.c:1646  */
+#line 75 "tinyc.y" /* yacc.c:1646  */
     {
                                                             if(SymLookUp(table_p,(yyvsp[-1].string_value))!=NULL){
                                                                   printf("\nWarning! In line %d: Variable %s already defined\n",yylineno,(yyvsp[-1].string_value) );                                                                  
@@ -1293,24 +1300,77 @@ yyreduce:
                                                                   SymInsert(table_p,(yyvsp[-1].string_value),(yyvsp[-2].integer_value));
                                                             }
                                                       }
-#line 1297 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1304 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 79 "tinyc.y" /* yacc.c:1646  */
+#line 85 "tinyc.y" /* yacc.c:1646  */
     {(yyval.integer_value) = integer;}
-#line 1303 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1310 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 80 "tinyc.y" /* yacc.c:1646  */
+#line 86 "tinyc.y" /* yacc.c:1646  */
     {(yyval.integer_value) = real;}
-#line 1309 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1316 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 8:
+#line 89 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));                                                      
+                                                      (yyval.symTab)->list_next = cloneList((yyvsp[-1].symTab)->list_next);                                                      
+                                                      backPatch(code,(yyvsp[-1].symTab)->list_next,(yyvsp[0].integer_value));
+                                                }
+#line 1326 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 9:
+#line 94 "tinyc.y" /* yacc.c:1646  */
+    {                                                      
+                                                      
+                                                }
+#line 1334 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 10:
+#line 99 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));
+                                                      backPatch(code,(yyvsp[-3].symTab)->list_true,(yyvsp[-1].integer_value));
+                                                      (yyval.symTab)->list_next = mergeList((yyvsp[-3].symTab)->list_false,(yyvsp[0].symTab)->list_next);
+                                                }
+#line 1344 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 11:
+#line 104 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));
+                                                      backPatch(code,(yyvsp[-6].symTab)->list_true,(yyvsp[-4].integer_value));
+                                                      backPatch(code,(yyvsp[-6].symTab)->list_false,(yyvsp[-1].integer_value));
+                                                      (yyval.symTab)->list_next=mergeList((yyvsp[-3].symTab)->list_next,mergeList((yyvsp[-2].list),(yyvsp[0].symTab)->list_next));
+                                                }
+#line 1355 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 12:
+#line 110 "tinyc.y" /* yacc.c:1646  */
+    {     
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));                                                      
+                                                      backPatch(code,(yyvsp[-3].symTab)->list_true,(yyvsp[-1].integer_value));
+                                                      (yyval.symTab)->list_next = cloneList((yyvsp[-3].symTab)->list_false);                                                      
+                                                      union result res;
+                                                      res.address = (yyvsp[-4].integer_value);
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+                                                }
+#line 1368 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 90 "tinyc.y" /* yacc.c:1646  */
+#line 118 "tinyc.y" /* yacc.c:1646  */
     {
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));
                                                       writeFile("code.txt",genAssign((yyvsp[-3].symTab)->name,(yyvsp[-1].symTab)->name));
                                                       if((yyvsp[-3].symTab)->type == real){
                                                             if((yyvsp[-1].symTab)->type == real){
@@ -1319,53 +1379,146 @@ yyreduce:
                                                             }else{
                                                                   /* Coercion */
                                                             	printf("\nInfo. Coercion performed at line %d passing integer to float\n",yylineno );
-                                                                  SymUpdate(table_p,(yyvsp[-3].symTab)->name,real,(yyvsp[-1].symTab)->value);
+                                                                  //SymUpdate(table_p,$1->name,real,$3->value);
                                                             }
                                                       }else{
                                                             if((yyvsp[-1].symTab)->type == real){
                                                                   printf("\nWarning! In line %d: Incompatible types, passing float to int\n",yylineno );
                                                             }else{
-                                                                  SymUpdate(table_p,(yyvsp[-3].symTab)->name,(yyvsp[-3].symTab)->type,(yyvsp[-1].symTab)->value);
+                                                                  //SymUpdate(table_p,$1->name,$1->type,$3->value);
                                                             }
                                                       }
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = (yyvsp[-3].symTab);
+                                                      g_ptr_array_add(code,newQuad("assign",res,(yyvsp[-1].symTab),NULL));
+                                                      (yyval.symTab)->list_next = g_ptr_array_new();       
                                                 }
-#line 1333 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1398 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 14:
+#line 143 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));
+                                                      (yyval.symTab)->list_next = g_ptr_array_new();
+                                                      union result resWrite;
+                                                      resWrite.entry = (yyvsp[-2].symTab);
+                                                      g_ptr_array_add(code,newQuad("read",resWrite,NULL,NULL));
+                                                      
+                                                }
+#line 1411 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 15:
+#line 151 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = malloc(sizeof(entry_p));
+                                                      (yyval.symTab)->list_next = g_ptr_array_new();
+                                                      union result resRead;
+                                                      resRead.entry = (yyvsp[-2].symTab);
+                                                      quad_p x = newQuad("write",resRead,NULL,NULL);
+                                                      g_ptr_array_add(code,x);
+                                                      PrintQuad(x);
+                                                      
+                                                }
+#line 1426 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 16:
+#line 161 "tinyc.y" /* yacc.c:1646  */
+    {                                                      
+                                                      (yyval.symTab) = (yyvsp[0].symTab);
+                                                }
+#line 1434 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 17:
+#line 166 "tinyc.y" /* yacc.c:1646  */
+    {
+													(yyval.integer_value) = code->len;
+											}
+#line 1442 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 117 "tinyc.y" /* yacc.c:1646  */
+#line 170 "tinyc.y" /* yacc.c:1646  */
     {
-                                                      (yyval.symTab)->type = integer;
-                                                }
-#line 1341 "tinyc.tab.c" /* yacc.c:1646  */
+													(yyval.list) = newList(code->len);
+                                                                              union result res;
+                                                                              res.address = 0;
+													g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+											}
+#line 1453 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 120 "tinyc.y" /* yacc.c:1646  */
-    {
-                                                      (yyval.symTab)->type = integer;
+#line 178 "tinyc.y" /* yacc.c:1646  */
+    {                                                      
+                                                      (yyval.symTab) = (yyvsp[-1].symTab);                                                      
                                                 }
-#line 1349 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1461 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 123 "tinyc.y" /* yacc.c:1646  */
-    {
+#line 183 "tinyc.y" /* yacc.c:1646  */
+    {                                                      
                                                       (yyval.symTab)->type = integer;
+                                                      (yyval.symTab)->list_true = newList(code->len);
+                                                      
+                                                      (yyval.symTab)->list_false = newList(code->len+1);                                                               
+                                                      union result res;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("LT",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
+                                                      union result res2;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
                                                 }
-#line 1357 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1478 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 126 "tinyc.y" /* yacc.c:1646  */
+#line 195 "tinyc.y" /* yacc.c:1646  */
     {
-                                                      (yyval.symTab) = (yyvsp[0].symTab);
+                                                      (yyval.symTab)->type = integer;
+                                                      (yyval.symTab)->list_true = newList(code->len);
+                                                      (yyval.symTab)->list_false = newList(code->len+1);
+                                                      union result res;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("EQ",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
+                                                      union result res2;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
                                                 }
-#line 1365 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1494 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 131 "tinyc.y" /* yacc.c:1646  */
+#line 206 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab)->type = integer;
+                                                      (yyval.symTab)->list_true = newList(code->len);
+                                                      (yyval.symTab)->list_false = newList(code->len+1);
+                                                      union result res;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("GT",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
+                                                      union result res2;
+                                                      res.address = 0;
+                                                      g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
+                                                }
+#line 1510 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 23:
+#line 217 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = (yyvsp[0].symTab);
+                                                }
+#line 1518 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 24:
+#line 222 "tinyc.y" /* yacc.c:1646  */
     {
                                                       (yyval.symTab) = newTemp(table_p);
                                                       if((yyvsp[-2].symTab)->type == real){
@@ -1392,14 +1545,19 @@ yyreduce:
                                                       //       if(strcmp($2->name,"int")==0)
                                                       //             writeFile("code.txt",genSum($$->name,$1->value,$3->name));            
                                                       // }
-                                                      writeFile("code.txt",genSum((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));            
+                                                      writeFile("code.txt",genSum((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));     
+
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = (yyval.symTab);
+                                                      g_ptr_array_add(code,newQuad("sum",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
                                                       
                                                 }
-#line 1399 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1557 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
-  case 23:
-#line 160 "tinyc.y" /* yacc.c:1646  */
+  case 25:
+#line 256 "tinyc.y" /* yacc.c:1646  */
     {     
                                                       (yyval.symTab) = newTemp(table_p);
                                                       if((yyvsp[-2].symTab)->type == real){
@@ -1422,21 +1580,25 @@ yyreduce:
                                                                   (yyval.symTab)->type = integer;
                                                             }
                                                       }
-                                                      writeFile("code.txt",genMinus((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));            
+                                                      writeFile("code.txt",genMinus((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name)); 
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = (yyval.symTab);
+                                                      g_ptr_array_add(code,newQuad("minus",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
                                                 }
-#line 1428 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1590 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
-  case 24:
-#line 184 "tinyc.y" /* yacc.c:1646  */
+  case 26:
+#line 284 "tinyc.y" /* yacc.c:1646  */
     {
                                                       (yyval.symTab) = (yyvsp[0].symTab);
                                                 }
-#line 1436 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1598 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
-  case 25:
-#line 189 "tinyc.y" /* yacc.c:1646  */
+  case 27:
+#line 289 "tinyc.y" /* yacc.c:1646  */
     {
                                                       (yyval.symTab) = newTemp(table_p);
                                                       if((yyvsp[-2].symTab)->type == real){
@@ -1459,13 +1621,18 @@ yyreduce:
                                                                   (yyval.symTab)->type = integer;
                                                             }
                                                       }
-                                                      writeFile("code.txt",genMult((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));            
+                                                      writeFile("code.txt",genMult((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));   
+
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = (yyval.symTab);
+                                                      g_ptr_array_add(code,newQuad("mult",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
                                                 }
-#line 1465 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1632 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
-  case 26:
-#line 213 "tinyc.y" /* yacc.c:1646  */
+  case 28:
+#line 318 "tinyc.y" /* yacc.c:1646  */
     {     
                                                       (yyval.symTab) = newTemp(table_p);
                                                       if((yyvsp[-2].symTab)->type == real){
@@ -1490,61 +1657,74 @@ yyreduce:
                                                                   (yyval.symTab)->type = real;
                                                             }
                                                       }   
+                                                      /* Write the code to a txt file for debug*/
                                                       writeFile("code.txt",genDiv((yyval.symTab)->name,(yyvsp[-2].symTab)->name,(yyvsp[0].symTab)->name));                                                               
-                                                }
-#line 1496 "tinyc.tab.c" /* yacc.c:1646  */
-    break;
 
-  case 27:
-#line 239 "tinyc.y" /* yacc.c:1646  */
-    {
-                                                      (yyval.symTab) = (yyvsp[0].symTab);
+                                                      /* Place the "code" generated in the array that represents the memory */
+                                                      union result res;
+                                                      res.entry = (yyval.symTab);
+                                                      g_ptr_array_add(code,newQuad("div",res,(yyvsp[-2].symTab),(yyvsp[0].symTab)));
                                                 }
-#line 1504 "tinyc.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 28:
-#line 244 "tinyc.y" /* yacc.c:1646  */
-    {
-                                                      (yyval.symTab) = (yyvsp[-1].symTab);
-                                                }
-#line 1512 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1669 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 247 "tinyc.y" /* yacc.c:1646  */
-    {
-                                                      (yyval.symTab) = malloc(sizeof(entry_p));
-                                                      (yyval.symTab)->name = malloc(sizeof(char *));
-                                                      strcpy((yyval.symTab)->name,"int");
-                                                      (yyval.symTab)->value.i_value = (yyvsp[0].integer_value);
-                                                      (yyval.symTab)->type = integer;
-                                                }
-#line 1524 "tinyc.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 30:
-#line 254 "tinyc.y" /* yacc.c:1646  */
-    {
-                                                      (yyval.symTab) = malloc(sizeof(entry_p));
-                                                      (yyval.symTab)->name = malloc(sizeof(char *));
-                                                      strcpy((yyval.symTab)->name,"float");
-                                                      (yyval.symTab)->value.r_value = (yyvsp[0].float_value);
-                                                      (yyval.symTab)->type = real;
-                                                }
-#line 1536 "tinyc.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 31:
-#line 261 "tinyc.y" /* yacc.c:1646  */
+#line 350 "tinyc.y" /* yacc.c:1646  */
     {
                                                       (yyval.symTab) = (yyvsp[0].symTab);
                                                 }
-#line 1544 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1677 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 30:
+#line 355 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = (yyvsp[-1].symTab);
+
+                                                }
+#line 1686 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 31:
+#line 359 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      //$$ = malloc(sizeof(entry_p));
+                                                      //$$->name = malloc(sizeof(char *));
+                                                      //strcpy($$->name,"int");
+                                                      //$$->value.i_value = $1;
+                                                      //$$->type = integer;
+                                                      union val value;
+                                                      value.i_value = (yyvsp[0].integer_value);                                                      
+                                                      (yyval.symTab) = newTempCons(table_p,value,integer);
+                                                }
+#line 1701 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 266 "tinyc.y" /* yacc.c:1646  */
+#line 369 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      //$$ = malloc(sizeof(entry_p));
+                                                      //$$->name = malloc(sizeof(char *));
+                                                      //strcpy($$->name,"float");
+                                                      //$$->value.r_value = $1;
+                                                      //$$->type = real;
+                                                      union val value;
+                                                      value.r_value = (yyvsp[0].float_value);                                                      
+                                                      (yyval.symTab) = newTempCons(table_p,value,real);
+                                                }
+#line 1716 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 33:
+#line 379 "tinyc.y" /* yacc.c:1646  */
+    {
+                                                      (yyval.symTab) = (yyvsp[0].symTab);
+                                                }
+#line 1724 "tinyc.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 34:
+#line 384 "tinyc.y" /* yacc.c:1646  */
     {
                                                       entry_p node = SymLookUp(table_p,(yyvsp[0].string_value));
                                                       if(node == NULL){
@@ -1553,11 +1733,11 @@ yyreduce:
                                                             (yyval.symTab) = node;
                                                       }
                                                 }
-#line 1557 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1737 "tinyc.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1561 "tinyc.tab.c" /* yacc.c:1646  */
+#line 1741 "tinyc.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1785,7 +1965,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 277 "tinyc.y" /* yacc.c:1906  */
+#line 395 "tinyc.y" /* yacc.c:1906  */
 
 #include"lex.yy.c"
 #include<ctype.h>
@@ -1798,6 +1978,8 @@ int main(int argc, char *argv[])
       /* Create the hash table to use as symbol table */
       	table_p = g_hash_table_new_full(g_str_hash, g_str_equal,NULL,(GDestroyNotify)FreeItem);
 
+        code = g_ptr_array_new();            
+
       	if(!yyparse())
 			printf("\nParsing complete\n");
 		else
@@ -1805,11 +1987,16 @@ int main(int argc, char *argv[])
 	
 	fclose(yyin);
 
+	/* Print the Quads generated for debugging pruposes */
+	PrintCode(code);
+
+	/* Execute the code generated using the given symbol table */
+	interprete(table_p,code);   
+
 	/* Print the table entries when the process is done */
 	printf("\nValue of integer: %d\nValue of real: %d\n",integer,real);
-	PrintTable(table_p);   
-      //writeFile("code.txt",genMult("t0","a","b"));
-
+	PrintTable(table_p);
+  
 	/* Free the space used by the symbol table*/
 	g_hash_table_destroy(table_p);
 	return EXIT_SUCCESS;

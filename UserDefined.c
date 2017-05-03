@@ -8,7 +8,7 @@
  */
 
 #include "UserDefined.h"
-
+int size = 0;
 	/* Prints the information of each node in the symbol table*/
 int PrintItem(entry_p my_item){
 	printf("Name: %s\nType: %d\n", my_item->name,my_item->type);
@@ -118,7 +118,7 @@ quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2){
 	myQuad->result = res;
 	myQuad->arg1 = arg1;
 	myQuad->arg2 = arg2;
-
+	size++;
 	return myQuad;
 }
 
@@ -225,4 +225,271 @@ void PrintList(GPtrArray * list,char * name){
 	printf("=======================\n");
 	g_ptr_array_foreach(list,(GFunc)PrintListHelper,NULL);
 	printf("=======================\n");
+}
+
+void interprete(GHashTable * my_table,GPtrArray *code){
+	int i = 0;
+	char * com;
+	entry_p add,t1,t2;	
+	union result res;
+	//quad_p quad;
+	//printf("%d\n",size);
+	while(i<code->len){
+		quad_p quad = g_ptr_array_index(code,i);
+		com = strdup(quad->op);
+		if(strcmp(com,"assign")==0){
+			//printf("%s,%s\n",com,quad->result.entry->name);		
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			if(add->type == 1){
+				if(t1->type == 1)
+					add->value.r_value = t1->value.r_value;
+				else{
+					add->value.r_value = (float)t1->value.i_value;
+				}
+				//printf("%f\n", add->value.r_value);
+			}else{
+				add->value.i_value = t1->value.i_value;
+				//printf("%d\n", add->value.i_value);
+			}
+		}
+		if(strcmp(com,"sum")==0){
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+
+			if(add->type == 1){
+				if ((t1->type == 1)&&t2->type == 1){
+					add->value.r_value = t1->value.r_value+t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.r_value = t1->value.i_value+t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							add->value.r_value = t1->value.r_value+t2->value.i_value;
+						}else{
+							add->value.r_value = t1->value.i_value+t2->value.i_value;
+						}
+					}
+				}
+			}else{
+				if ((t1->type == 1)&&(t2->type == 1)){
+						add->value.i_value = t1->value.r_value+t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.i_value = t1->value.i_value+t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+						add->value.i_value = t1->value.r_value+t2->value.i_value;
+						}else{
+							add->value.i_value = t1->value.i_value+t2->value.i_value;
+						}
+					}
+				}
+			}
+		}
+		if(strcmp(com,"minus")==0){
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+
+			if(add->type == 1){
+				if ((t1->type == 1)&&t2->type == 1){
+					add->value.r_value = t1->value.r_value-t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.r_value = t1->value.i_value-t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							add->value.r_value = t1->value.r_value-t2->value.i_value;
+						}else{
+							add->value.r_value = t1->value.i_value-t2->value.i_value;
+						}
+					}
+				}
+			}else{
+				if ((t1->type == 1)&&(t2->type == 1)){
+						add->value.i_value = t1->value.r_value-t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.i_value = t1->value.i_value-t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+						add->value.i_value = t1->value.r_value-t2->value.i_value;
+						}else{
+							add->value.i_value = t1->value.i_value-t2->value.i_value;
+						}
+					}
+				}
+			}
+		}
+		if(strcmp(com,"mult")==0){
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+
+			
+			//printf("%s,%s,%s\n",add->name,t1->name,t2->name);
+			//printf("%d,%f,%d\n",add->value.i_value,t1->value.r_value,t2->value.i_value);
+			if(add->type == 1){
+				if ((t1->type == 1)&&t2->type == 1){
+					add->value.r_value = t1->value.r_value*t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.r_value = t1->value.i_value*t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							add->value.r_value = t1->value.r_value*t2->value.i_value;
+						}else{
+							add->value.r_value = t1->value.i_value*t2->value.i_value;
+						}
+					}
+				}
+			}else{
+				if ((t1->type == 1)&&(t2->type == 1)){
+						add->value.i_value = t1->value.r_value*t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.i_value = t1->value.i_value*t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+						add->value.i_value = t1->value.r_value*t2->value.i_value;
+						}else{
+							add->value.i_value = t1->value.i_value*t2->value.i_value;
+						}
+					}
+				}
+			}
+		}
+		if(strcmp(com,"div")==0){
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+
+			if(add->type == 1){
+				if ((t1->type == 1)&&t2->type == 1){
+					add->value.r_value = t1->value.r_value/t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.r_value = t1->value.i_value/t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							add->value.r_value = t1->value.r_value/t2->value.i_value;
+						}else{
+							add->value.r_value = t1->value.i_value/t2->value.i_value;
+						}
+					}
+				}
+			}else{
+				if ((t1->type == 1)&&(t2->type == 1)){
+						add->value.i_value = t1->value.r_value/t2->value.r_value;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						add->value.i_value = t1->value.i_value/t2->value.r_value;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+						add->value.i_value = t1->value.r_value/t2->value.i_value;
+						}else{
+							add->value.i_value = t1->value.i_value/t2->value.i_value;
+						}
+					}
+				}
+			}
+		}
+		if(strcmp(com,"read")==0){
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+			printf("Enter value for %s ",add->name);
+			if(add->type == integer){
+				int myVar;
+				scanf("%d",&myVar);
+				add->value.i_value = myVar;
+			}else{
+				float myVar;
+				scanf("%f",&myVar);
+				add->value.r_value = myVar;
+			}
+		}
+		if(strcmp(com,"write")==0){
+			add = g_hash_table_lookup(my_table,quad->result.entry->name);
+			printf("%s := ",add->name);
+			if(add->type==integer)
+				printf("%d\n",add->value.i_value );
+			else				
+				printf("%f\n",add->value.r_value );
+		}
+		if(strcmp(com,"LT")==0){
+			//printf("%s\n",com);	
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+			if ((t1->type == 1)&&t2->type == 1){
+					if((int)t1->value.r_value < (int)t2->value.r_value)
+						i=quad->result.address-1;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						if(t1->value.i_value < (int)t2->value.r_value)
+							i=quad->result.address-1;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							if((int)t1->value.r_value < t2->value.i_value)
+								i=quad->result.address-1;
+						}else{
+							if(t1->value.i_value < t2->value.i_value)
+								i=quad->result.address-1;
+						}
+					}
+				}
+			
+		}
+		if(strcmp(com,"EQ")==0){
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+			if ((t1->type == 1)&&t2->type == 1){
+					if((int)t1->value.r_value == (int)t2->value.r_value)
+						i=quad->result.address-1;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						if(t1->value.i_value == (int)t2->value.r_value)
+							i=quad->result.address-1;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							if((int)t1->value.r_value == t2->value.i_value)
+								i=quad->result.address-1;
+						}else{
+							if(t1->value.i_value == t2->value.i_value)
+								i=quad->result.address-1;
+						}
+					}
+				}
+		}
+		if(strcmp(com,"GT")==0){
+			t1  = g_hash_table_lookup(my_table,quad->arg1->name);
+			t2  = g_hash_table_lookup(my_table,quad->arg2->name);
+			if ((t1->type == 1)&&t2->type == 1){
+					if((int)t1->value.r_value > (int)t2->value.r_value)
+						i=quad->result.address-1;
+				}else{
+					if ((t1->type != 1)&&t2->type == 1){
+						if(t1->value.i_value > (int)t2->value.r_value)
+							i=quad->result.address-1;
+					}else{
+						if ((t1->type == 1)&&t2->type != 1){
+							if((int)t1->value.r_value > t2->value.i_value)
+								i=quad->result.address-1;
+						}else{
+							if(t1->value.i_value > t2->value.i_value)
+								i=quad->result.address-1;
+						}
+					}
+				}
+		}
+		if(strcmp(com,"jump")==0){
+			i=quad->result.address-1;
+		}
+		i++;
+	}
 }

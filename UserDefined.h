@@ -43,6 +43,7 @@ typedef struct quad_{
 	entry_p			arg2;
 }quad;
 
+
 typedef struct quad_ * quad_p;
 
 	/* Specifies how to print each of the items in the symbol table 				*/
@@ -96,3 +97,5 @@ int PrintListHelper(gpointer data, gpointer user_data);
 void PrintList(GPtrArray * list,char * name);
 
 GPtrArray * cloneList(GPtrArray * list);
+
+void interprete(GHashTable * my_table,GPtrArray *code);

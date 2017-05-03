@@ -9,7 +9,6 @@
 
 GHashTable *      table_p;
 GPtrArray *          code;
-GPtrArray *       WTF;
 
 /* For the insertion into the code array */
 
@@ -126,7 +125,7 @@ stmt        : IF exp THEN m stmt                {
                                                             }else{
                                                                   /* Coercion */
                                                             	printf("\nInfo. Coercion performed at line %d passing integer to float\n",yylineno );
-                                                                  SymUpdate(table_p,$1->name,real,$3->value);
+                                                                  //SymUpdate(table_p,$1->name,real,$3->value);
                                                             }
                                                       }else{
                                                             if($3->type == real){
@@ -143,19 +142,21 @@ stmt        : IF exp THEN m stmt                {
                                                 }                             
             | READ LPAREN variable RPAREN SEMI  {
                                                       $$ = malloc(sizeof(entry_p));
-                                                      union result res;
-                                                      res.entry = $3;
-                                                      g_ptr_array_add(code,newQuad("read",res,NULL,NULL));
                                                       $$->list_next = g_ptr_array_new();
+                                                      union result resWrite;
+                                                      resWrite.entry = $3;
+                                                      g_ptr_array_add(code,newQuad("read",resWrite,NULL,NULL));
+                                                      
                                                 }
             | WRITE LPAREN exp RPAREN SEMI      {
                                                       $$ = malloc(sizeof(entry_p));
-                                                      union result res;
-                                                      res.entry = $3;
-                                                      quad_p x = newQuad("write",res,NULL,NULL);
+                                                      $$->list_next = g_ptr_array_new();
+                                                      union result resRead;
+                                                      resRead.entry = $3;
+                                                      quad_p x = newQuad("write",resRead,NULL,NULL);
                                                       g_ptr_array_add(code,x);
                                                       PrintQuad(x);
-                                                      $$->list_next = g_ptr_array_new();
+                                                      
                                                 }
             | block                             {                                                      
                                                       $$ = $1;
@@ -403,8 +404,7 @@ int main(int argc, char *argv[])
       /* Create the hash table to use as symbol table */
       	table_p = g_hash_table_new_full(g_str_hash, g_str_equal,NULL,(GDestroyNotify)FreeItem);
 
-            code = g_ptr_array_new();
-            WTF = g_ptr_array_new();
+        code = g_ptr_array_new();            
 
       	if(!yyparse())
 			printf("\nParsing complete\n");
@@ -413,119 +413,16 @@ int main(int argc, char *argv[])
 	
 	fclose(yyin);
 
+	/* Print the Quads generated for debugging pruposes */
+	PrintCode(code);
+
+	/* Execute the code generated using the given symbol table */
+	interprete(table_p,code);   
+
 	/* Print the table entries when the process is done */
 	printf("\nValue of integer: %d\nValue of real: %d\n",integer,real);
-	      
-      //PrintCode(code) ;
-      //writeFile("code.txt",genMult("t0","a","b"));
-
-      /*************************************************/
-
-      int i = 0;
-      while(i<code->len){
-            quad_p myQuad = g_ptr_array_index(code,i);
-            i++;
-            if(strcmp(myQuad->op,"assign")==0){                  
-                  char * var = (myQuad->result.entry)->name;                  
-                  enum myTypes type = (myQuad->result.entry)->type;
-                  union val value = (myQuad->arg1)->value;
-                  SymUpdate(table_p,var,type,value);
-                  printf("Upadated %s with value: %d and type %d\n", var, value.i_value,type);
-            }else if(strcmp(myQuad->op,"jump")==0){
-                  i = myQuad->result.address;
-                  printf("Jumped to line %d\n", i);
-            }else if(strcmp(myQuad->op,"write")==0){
-                  printf("Entered write quad\n");
-                  if((myQuad->result.entry)->type == integer){
-                        printf("Value of %s: %d\n", (myQuad->result.entry)->name,(myQuad->result.entry)->value.i_value);
-                  }else{
-                        printf("Value of %s: %f\n", (myQuad->result.entry)->name,(myQuad->result.entry)->value.r_value);
-                  }                  
-            }else if(strcmp(myQuad->op,"LT")==0){
-                  
-                  if((myQuad->arg1)->type == integer){
-                        if((myQuad->arg2)->type == integer){
-                              int val1 = (myQuad->arg1)->value.i_value;                              
-                              int val2 = (myQuad->arg2)->value.i_value;
-                              printf("Values compared %d < %d \n",val1,val2 );
-                              if( val1 < val2 ){
-                                    i = myQuad->result.address;
-                                    printf("Jumped to line %d\n", i); 
-                              }                               
-                        }
-                        else{
-                              int val1 = (myQuad->arg1)->value.i_value;                              
-                              float val2 = (myQuad->arg2)->value.r_value;
-                              printf("Values compared %d < %f \n",val1,val2 );
-                              if( val1 < val2 ){
-                                    i = myQuad->result.address;
-                                    printf("Jumped to line %d\n", i); 
-                              }
-                        }
-                  }else{
-                        if((myQuad->arg2)->type == integer){
-                              float val1 = (myQuad->arg1)->value.r_value;                              
-                              int val2 = (myQuad->arg2)->value.i_value;
-                              printf("Values compared %f < %d \n",val1,val2 );
-                              if( val1 < val2 ){
-                                    i = myQuad->result.address;
-                                    printf("Jumped to line %d\n", i); 
-                              }
-                        }
-                        else{
-                              float val1 = (myQuad->arg1)->value.r_value;                              
-                              float val2 = (myQuad->arg2)->value.r_value;
-                              printf("Values compared %f < %f \n",val1,val2 );
-                              if( val1 < val2 ){
-                                    i = myQuad->result.address;
-                                    printf("Jumped to line %d\n", i); 
-                              }
-                        }
-                  }
-            }else if(strcmp(myQuad->op,"GT")==0){
-
-            }else if(strcmp(myQuad->op,"EQ")==0){
-
-            }else if(strcmp(myQuad->op,"sum")==0){
-                  float res;
-                  char * var = (myQuad->result.entry)->name;
-                  union val value;
-                  enum myTypes type = (myQuad->result.entry)->type;
-                  if((myQuad->arg1)->type == integer){
-                        if((myQuad->arg2)->type == integer){
-                              res = (myQuad->arg1)->value.i_value + (myQuad->arg2)->value.i_value;
-                        }
-                        else{
-                              res = (myQuad->arg1)->value.i_value + (myQuad->arg2)->value.r_value;     
-                        }
-                  }else{
-                        if((myQuad->arg2)->type == integer){
-                              res = (myQuad->arg1)->value.r_value + (myQuad->arg2)->value.i_value;
-                        }
-                        else{
-                              res = (myQuad->arg1)->value.r_value + (myQuad->arg2)->value.r_value;     
-                        }
-                  }
-                  if(type == integer){
-                        value.i_value = (int) res;
-                        printf("Result of sum %d\n",(int)res );
-                  }else{
-                        value.r_value = res;     
-                        printf("Result of sum %f\n",res );
-                  }
-                  
-                  SymUpdate(table_p,var,type,value);
-            }else if(strcmp(myQuad->op,"mult")==0){
-
-            }else if(strcmp(myQuad->op,"div")==0){
-
-            }
-            
-
-      }
-      PrintTable(table_p); 
-      PrintCode(code);
-      
+	PrintTable(table_p);
+  
 	/* Free the space used by the symbol table*/
 	g_hash_table_destroy(table_p);
 	return EXIT_SUCCESS;
