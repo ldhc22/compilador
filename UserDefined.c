@@ -8,7 +8,6 @@
  */
 
 #include "UserDefined.h"
-int size = 0;
 	/* Prints the information of each node in the symbol table*/
 int PrintItem(entry_p my_item){
 	printf("Name: %s\nType: %d\n", my_item->name,my_item->type);
@@ -118,7 +117,6 @@ quad_p newQuad(char * op, union result res, entry_p arg1, entry_p arg2){
 	myQuad->result = res;
 	myQuad->arg1 = arg1;
 	myQuad->arg2 = arg2;
-	size++;
 	return myQuad;
 }
 
@@ -231,9 +229,10 @@ void interprete(GHashTable * my_table,GPtrArray *code){
 	int i = 0;
 	char * com;
 	entry_p add,t1,t2;	
-	union result res;
-	//quad_p quad;
-	//printf("%d\n",size);
+	union result res;	
+	printf("===================================\n");
+	printf("       CODE INTERPRETATION         \n");
+	printf("===================================\n");
 	while(i<code->len){
 		quad_p quad = g_ptr_array_index(code,i);
 		com = strdup(quad->op);
@@ -403,7 +402,7 @@ void interprete(GHashTable * my_table,GPtrArray *code){
 		}
 		if(strcmp(com,"read")==0){
 			add = g_hash_table_lookup(my_table,quad->result.entry->name);
-			printf("Enter value for %s ",add->name);
+			printf("\nEnter value for %s ",add->name);
 			if(add->type == integer){
 				int myVar;
 				scanf("%d",&myVar);
@@ -416,7 +415,7 @@ void interprete(GHashTable * my_table,GPtrArray *code){
 		}
 		if(strcmp(com,"write")==0){
 			add = g_hash_table_lookup(my_table,quad->result.entry->name);
-			printf("%s := ",add->name);
+			printf("\n%s := ",add->name);
 			if(add->type==integer)
 				printf("%d\n",add->value.i_value );
 			else				
@@ -492,4 +491,7 @@ void interprete(GHashTable * my_table,GPtrArray *code){
 		}
 		i++;
 	}
+	printf("===================================\n");
+	printf("       END OF INTERPRETATION         \n");
+	printf("===================================\n");
 }

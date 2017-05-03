@@ -5,12 +5,9 @@
 #include <glib.h>
 
 #include "UserDefined.h"
-#include "FileManagement.h"
 
-GHashTable *      table_p;
-GPtrArray *          code;
-
-/* For the insertion into the code array */
+GHashTable *      table_p;		//Symbol table to store data
+GPtrArray *          code;		//Array where the Quads will be stored
 
 extern int  yylineno;
 void        yyerror(char *s);
@@ -18,10 +15,10 @@ void        yyerror(char *s);
 %}
 
 %union {
-   int            integer_value;
-   float          float_value;
-   char *         string_value;
-   entry_p        symTab;
+   int          integer_value;
+   float        float_value;
+   char *       string_value;
+   entry_p      symTab;
    GPtrArray *	list;
 }
 
@@ -120,8 +117,7 @@ stmt        : IF exp THEN m stmt                {
                                                       writeFile("code.txt",genAssign($1->name,$3->name));
                                                       if($1->type == real){
                                                             if($3->type == real){
-                                                                  SymUpdate(table_p,$1->name,$1->type,$3->value);
-                                                                  //writeFile("code.txt","");
+                                                                  //SymUpdate(table_p,$1->name,$1->type,$3->value);                                                                  
                                                             }else{
                                                                   /* Coercion */
                                                             	printf("\nInfo. Coercion performed at line %d passing integer to float\n",yylineno );
@@ -152,10 +148,8 @@ stmt        : IF exp THEN m stmt                {
                                                       $$ = malloc(sizeof(entry_p));
                                                       $$->list_next = g_ptr_array_new();
                                                       union result resRead;
-                                                      resRead.entry = $3;
-                                                      quad_p x = newQuad("write",resRead,NULL,NULL);
-                                                      g_ptr_array_add(code,x);
-                                                      PrintQuad(x);
+                                                      resRead.entry = $3;                                                      
+                                                      g_ptr_array_add(code,newQuad("write",resRead,NULL,NULL));                                                      
                                                       
                                                 }
             | block                             {                                                      
@@ -165,18 +159,18 @@ stmt        : IF exp THEN m stmt                {
             
 m           :									{
 													$$ = code->len;
-											}
+												}
             ;
 n           : ELSE 								{
 													$$ = newList(code->len);
-                                                                              union result res;
-                                                                              res.address = 0;
+													union result res;
+													res.address = 0;
 													g_ptr_array_add(code,newQuad("jump",res,NULL,NULL));
-											}
+												}
             ;
 
 block       : LBRACE stmt_seq RBRACE            {                                                      
-                                                      $$ = $2;                                                      
+                                                    $$ = $2;                                                      
                                                 }
             ;
 
@@ -240,13 +234,7 @@ simple_exp  : simple_exp PLUS term              {
                                                             else{
                                                                   $$->type = integer;
                                                             }
-                                                      }
-                                                      // if(strcmp($1->name,"int")==0){
-                                                      //       if(strcmp($2->name,"int")==0)
-                                                      //             writeFile("code.txt",genSum($$->name,$1->value,$3->name));            
-                                                      // }
-                                                      writeFile("code.txt",genSum($$->name,$1->name,$3->name));     
-
+                                                      }                                                                                                            
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
@@ -275,7 +263,6 @@ simple_exp  : simple_exp PLUS term              {
                                                                   $$->type = integer;
                                                             }
                                                       }
-                                                      writeFile("code.txt",genMinus($$->name,$1->name,$3->name)); 
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
@@ -308,8 +295,6 @@ term        : term TIMES factor                 {
                                                                   $$->type = integer;
                                                             }
                                                       }
-                                                      writeFile("code.txt",genMult($$->name,$1->name,$3->name));   
-
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
@@ -339,9 +324,6 @@ term        : term TIMES factor                 {
                                                                   $$->type = real;
                                                             }
                                                       }   
-                                                      /* Write the code to a txt file for debug*/
-                                                      writeFile("code.txt",genDiv($$->name,$1->name,$3->name));                                                               
-
                                                       /* Place the "code" generated in the array that represents the memory */
                                                       union result res;
                                                       res.entry = $$;
@@ -356,22 +338,12 @@ factor      : LPAREN exp RPAREN                 {
                                                       $$ = $2;
 
                                                 }
-            | INT_NUM                           {
-                                                      //$$ = malloc(sizeof(entry_p));
-                                                      //$$->name = malloc(sizeof(char *));
-                                                      //strcpy($$->name,"int");
-                                                      //$$->value.i_value = $1;
-                                                      //$$->type = integer;
+            | INT_NUM                           {                                                      
                                                       union val value;
                                                       value.i_value = $1;                                                      
                                                       $$ = newTempCons(table_p,value,integer);
                                                 }
-            | FLOAT_NUM                         {
-                                                      //$$ = malloc(sizeof(entry_p));
-                                                      //$$->name = malloc(sizeof(char *));
-                                                      //strcpy($$->name,"float");
-                                                      //$$->value.r_value = $1;
-                                                      //$$->type = real;
+            | FLOAT_NUM                         {                                                      
                                                       union val value;
                                                       value.r_value = $1;                                                      
                                                       $$ = newTempCons(table_p,value,real);
@@ -412,17 +384,17 @@ int main(int argc, char *argv[])
 			printf("\nParsing failed\n");
 	
 	fclose(yyin);
-
+#ifdef DEBUG
 	/* Print the Quads generated for debugging pruposes */
 	PrintCode(code);
-
+#endif
 	/* Execute the code generated using the given symbol table */
 	interprete(table_p,code);   
-
+#ifdef DEBUG
 	/* Print the table entries when the process is done */
 	printf("\nValue of integer: %d\nValue of real: %d\n",integer,real);
 	PrintTable(table_p);
-  
+#endif
 	/* Free the space used by the symbol table*/
 	g_hash_table_destroy(table_p);
 	return EXIT_SUCCESS;
